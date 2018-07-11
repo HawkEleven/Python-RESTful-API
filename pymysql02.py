@@ -11,6 +11,7 @@ from urllib import request
 import chardet
 
 from pymysql01 import MySQLCommand
+from pymysql01 import SqlalchemyCommand
 
 target_url = 'https://www.huxiu.com'
 head = {}
@@ -25,9 +26,10 @@ download_soup = BeautifulSoup(str(chapters), 'lxml')
 hot_list = download_soup.select('.hot-article-img')
 
 # 连接数据库
-mysqlCommand = MySQLCommand()
+mysqlCommand = SqlalchemyCommand()
 mysqlCommand.connectMysql()
 dataCount = int(mysqlCommand.getLastId())
+print('数据库数据个数', dataCount)
 
 for new in hot_list:
     a = new.select('a')
@@ -55,8 +57,9 @@ for new in hot_list:
         "img_path": imgUrl
     }
     print('----第%s条数据----' % (dataCount + 1))
+
     try:
-        # 插入数据，如果已经存在就不在重复插入
+        # 插入数据，如果已经存在就不再重复插入
         res = mysqlCommand.insertData(news_dict)
         if res:
             dataCount = res

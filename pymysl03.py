@@ -19,12 +19,6 @@ from pymysql01 import SqlalchemyCommand
 
 auth = HTTPBasicAuth()
 
-@auth.get_password
-def get_password(username):
-    if username == 'ok':
-        return 'python'
-    return None
-
 @auth.error_handler
 def unauthorized():
     return make_response(jsonify({'error': 'Unauthorized access'}), 403)
@@ -35,31 +29,30 @@ mysqlCommand = MySQLCommand()
 mysqlCommand.connectMysql()
 news = mysqlCommand.selectAllData()
 
-# sqlalchemyCommand = SqlalchemyCommand()
-# sqlalchemyCommand.connectMysql()
-# news = sqlalchemyCommand.selectAllData()
-
 # news
 @app.route('/news/api/v1.0/list', methods=['GET'])
-# @auth.login_required
 def get_news():
     return jsonify({'news': news})
 
 # news_id
 @app.route('/news/api/v1.0/list/<int:new_id>', methods=['GET'])
 def get_new(new_id):
-   # new = list(filter(lambda t: t['id'] == new_id, news))
    new = mysqlCommand.selectDataById(new_id)
    
-   if len(new) == 0:
-       abort(404)
-   return jsonify({'new': new[0]})
+   if new:
+     return jsonify({'new': new[0]})
+   else:
+    abort(404)
 
-# # 404
-# @app.errorhandler(404)
-# def not_found(error):
-#     return jsonify({'new': new[0]})
+# 404
+@app.errorhandler(404)
+def not_found(error):
+    return make_response(jsonify({'error': 'Not found'}), 404)
 
 if __name__ == '__main__':
+    # 默认监听localhost
     app.run(debug=True) 
+    
+    # # 可改为本地IP，在局域网供手机访问
+    # app.run(host='电脑IP', port=8080, debug=True)
     
